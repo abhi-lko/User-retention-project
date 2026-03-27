@@ -1,0 +1,983 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@500;600;700&family=Inter:wght@400;500&display=swap');
+
+  :root {
+    --rapido-orange: #FF5A1F;
+    --rapido-orange-soft: #FF8C5A;
+    --rapido-dark: #1A1A2E;
+    --rapido-mid: #16213E;
+    --rapido-card: #0F3460;
+    --rapido-accent: #E94560;
+    --rapido-green: #00D68F;
+    --rapido-yellow: #FFD60A;
+    --rapido-text: #F0F0F0;
+    --rapido-muted: #8892A4;
+    --rapido-border: rgba(255,255,255,0.08);
+    --gap: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--rapido-dark);
+    color: var(--rapido-text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* TOP HEADER */
+  .header {
+    background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+    border-bottom: 1px solid var(--rapido-border);
+    padding: 16px 24px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 32px; height: 32px; background: var(--rapido-orange);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #fff;
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--rapido-text); }
+  .logo-sub { font-size: 11px; color: var(--rapido-muted); letter-spacing: 0.05em; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .date-badge {
+    background: rgba(255,90,31,0.15); border: 1px solid rgba(255,90,31,0.3);
+    color: var(--rapido-orange); font-family: 'DM Mono', monospace; font-size: 11px;
+    padding: 4px 10px; border-radius: 20px; letter-spacing: 0.05em;
+  }
+  .pm-badge {
+    background: rgba(0,214,143,0.12); border: 1px solid rgba(0,214,143,0.3);
+    color: var(--rapido-green); font-size: 11px; font-weight: 500;
+    padding: 4px 10px; border-radius: 20px;
+  }
+
+  /* NAV TABS */
+  .nav { background: var(--rapido-mid); border-bottom: 1px solid var(--rapido-border); padding: 0 24px; display: flex; gap: 0; }
+  .nav-tab {
+    padding: 12px 20px; font-size: 12px; font-weight: 500; cursor: pointer;
+    border-bottom: 2px solid transparent; color: var(--rapido-muted);
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .nav-tab.active { color: var(--rapido-orange); border-bottom-color: var(--rapido-orange); }
+  .nav-tab:hover:not(.active) { color: var(--rapido-text); }
+
+  /* MAIN CONTENT */
+  .main { padding: 20px 24px; }
+
+  /* SECTION HIDE/SHOW */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* KPI STRIP */
+  .kpi-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--gap); margin-bottom: 20px; }
+  .kpi-card {
+    background: var(--rapido-mid); border: 1px solid var(--rapido-border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .kpi-label { font-size: 11px; color: var(--rapido-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--rapido-text); }
+  .kpi-sub { font-size: 11px; margin-top: 4px; }
+  .kpi-up { color: var(--rapido-green); }
+  .kpi-down { color: var(--rapido-accent); }
+  .kpi-bar { height: 3px; border-radius: 2px; margin-top: 10px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .kpi-bar-fill { height: 100%; border-radius: 2px; }
+
+  /* CHARTS GRID */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-bottom: 20px; }
+  .charts-grid-3 { display: grid; grid-template-columns: 1.4fr 0.6fr 1fr; gap: var(--gap); margin-bottom: 20px; }
+  .chart-card {
+    background: var(--rapido-mid); border: 1px solid var(--rapido-border);
+    border-radius: 10px; padding: 16px;
+  }
+  .chart-card.full { grid-column: 1 / -1; }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--rapido-text); margin-bottom: 4px; }
+  .card-sub { font-size: 11px; color: var(--rapido-muted); margin-bottom: 14px; }
+
+  /* CANVAS WRAPPER */
+  .canvas-wrap { position: relative; width: 100%; }
+
+  /* FUNNEL */
+  .funnel-stage { margin-bottom: 8px; }
+  .funnel-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .funnel-label { font-size: 12px; color: var(--rapido-muted); }
+  .funnel-count { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--rapido-text); }
+  .funnel-pct { font-size: 11px; color: var(--rapido-accent); margin-left: 6px; }
+  .funnel-bar-bg { height: 22px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+  .funnel-bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.9); transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+
+  /* RETENTION COHORT TABLE */
+  .cohort-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .cohort-table th { color: var(--rapido-muted); font-weight: 500; padding: 4px 6px; text-align: center; }
+  .cohort-table th:first-child { text-align: left; }
+  .cohort-table td { padding: 4px 6px; text-align: center; border-radius: 3px; }
+  .cohort-table td:first-child { text-align: left; color: var(--rapido-muted); font-family: 'DM Mono', monospace; font-size: 10px; }
+  .cohort-cell { border-radius: 3px; padding: 3px 6px; font-family: 'DM Mono', monospace; }
+
+  /* HYPOTHESIS CARDS */
+  .hyp-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--gap); }
+  .hyp-card {
+    background: var(--rapido-mid); border: 1px solid var(--rapido-border);
+    border-radius: 10px; padding: 16px;
+  }
+  .hyp-tag { font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 12px; display: inline-block; margin-bottom: 10px; }
+  .hyp-tag.validated { background: rgba(0,214,143,0.15); color: var(--rapido-green); border: 1px solid rgba(0,214,143,0.3); }
+  .hyp-tag.testing { background: rgba(255,214,10,0.12); color: var(--rapido-yellow); border: 1px solid rgba(255,214,10,0.25); }
+  .hyp-tag.planned { background: rgba(255,90,31,0.12); color: var(--rapido-orange); border: 1px solid rgba(255,90,31,0.25); }
+  .hyp-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--rapido-text); margin-bottom: 6px; }
+  .hyp-desc { font-size: 12px; color: var(--rapido-muted); line-height: 1.6; margin-bottom: 12px; }
+  .hyp-stat-row { display: flex; justify-content: space-between; }
+  .hyp-stat { text-align: center; }
+  .hyp-stat-val { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--rapido-text); }
+  .hyp-stat-lbl { font-size: 10px; color: var(--rapido-muted); margin-top: 2px; }
+  .hyp-divider { height: 1px; background: var(--rapido-border); margin: 12px 0; }
+  .impact-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-top: 6px; }
+  .impact-fill { height: 100%; border-radius: 2px; background: var(--rapido-orange); }
+
+  /* SEGMENT TABLE */
+  .seg-table { width: 100%; border-collapse: collapse; }
+  .seg-table thead th { font-size: 11px; color: var(--rapido-muted); font-weight: 500; padding: 6px 8px; border-bottom: 1px solid var(--rapido-border); text-align: left; }
+  .seg-table tbody td { padding: 8px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; }
+  .seg-badge { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 10px; }
+
+  /* RECOMMENDATION CARDS */
+  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-top: 20px; }
+  .rec-card {
+    background: var(--rapido-mid); border-left: 3px solid var(--rapido-orange);
+    border-radius: 0 10px 10px 0; padding: 14px 16px;
+  }
+  .rec-num { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--rapido-orange); margin-bottom: 2px; }
+  .rec-title { font-size: 13px; font-weight: 500; color: var(--rapido-text); margin-bottom: 6px; }
+  .rec-desc { font-size: 12px; color: var(--rapido-muted); line-height: 1.6; }
+
+  /* METRICS STRIP */
+  .metric-inline { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot.green { background: var(--rapido-green); }
+  .dot.orange { background: var(--rapido-orange); }
+  .dot.red { background: var(--rapido-accent); }
+  .dot.yellow { background: var(--rapido-yellow); }
+
+  /* AB TEST */
+  .ab-row { display: flex; gap: var(--gap); margin-bottom: var(--gap); }
+  .ab-side { flex: 1; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px 14px; border: 1px solid var(--rapido-border); }
+  .ab-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: var(--rapido-muted); margin-bottom: 6px; }
+  .ab-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+  .ab-desc { font-size: 11px; color: var(--rapido-muted); margin-top: 3px; }
+
+  /* INSIGHT STRIP */
+  .insight-strip { background: rgba(255,90,31,0.08); border: 1px solid rgba(255,90,31,0.2); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px; }
+  .insight-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+  .insight-text { font-size: 12px; color: var(--rapido-text); line-height: 1.6; }
+  .insight-text strong { color: var(--rapido-orange); }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">R</div>
+    <div>
+      <div class="logo-text">Rapido · Retention Intelligence</div>
+      <div class="logo-sub">PM Portfolio Project — User Lifecycle Analysis</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="date-badge">Jan 2025 Cohort · n=10,000</div>
+    <div class="pm-badge">✦ Product Case Study</div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-tab active" onclick="switchTab('overview')">Overview</div>
+  <div class="nav-tab" onclick="switchTab('funnel')">Activation Funnel</div>
+  <div class="nav-tab" onclick="switchTab('cohort')">Cohort Retention</div>
+  <div class="nav-tab" onclick="switchTab('hypotheses')">Hypotheses</div>
+  <div class="nav-tab" onclick="switchTab('segments')">User Segments</div>
+  <div class="nav-tab" onclick="switchTab('abtest')">A/B Strategy</div>
+</div>
+
+<div class="main">
+
+  <!-- ===== OVERVIEW ===== -->
+  <div class="section active" id="section-overview">
+    <div class="kpi-strip">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Users</div>
+        <div class="kpi-value">10,000</div>
+        <div class="kpi-sub kpi-up">↑ Jan 2025 cohort</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--rapido-orange)"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Onboarding Rate</div>
+        <div class="kpi-value">78.4%</div>
+        <div class="kpi-sub kpi-up">↑ 7,840 completed</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:78.4%;background:#E94560"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">D1 Retained</div>
+        <div class="kpi-value">48.2%</div>
+        <div class="kpi-sub kpi-down">↓ major drop-off</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:48.2%;background:var(--rapido-yellow)"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Transacted</div>
+        <div class="kpi-value">22.1%</div>
+        <div class="kpi-sub kpi-up">2,210 users</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:22.1%;background:var(--rapido-green)"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">W2 Retained</div>
+        <div class="kpi-value">18.7%</div>
+        <div class="kpi-sub kpi-down">↓ critical gap</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:18.7%;background:#8892A4"></div></div>
+      </div>
+    </div>
+
+    <div class="insight-strip">
+      <div class="insight-icon">💡</div>
+      <div class="insight-text">
+        <strong>Key finding:</strong> 21.6% of users who signed up never completed onboarding (2,160 users). Of those who onboarded, only ~48% returned within 24h. Users who completed a transaction in Day 0 show <strong>3.1× higher 2-week retention</strong> — first-ride completion is Rapido's single biggest retention lever.
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="card-title">Daily New Signups — Jan 2025</div>
+        <div class="card-sub">Signup volume across the month</div>
+        <div class="canvas-wrap" style="height:180px"><canvas id="signupChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Event Breakdown by Type</div>
+        <div class="card-sub">Distribution of all events in dataset</div>
+        <div class="canvas-wrap" style="height:180px"><canvas id="eventChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="card-title">User Journey Stage Distribution</div>
+        <div class="card-sub">Where users are in their lifecycle</div>
+        <div class="canvas-wrap" style="height:160px"><canvas id="stageChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Retention by Signup Week</div>
+        <div class="card-sub">Week-over-week retention cohort overview</div>
+        <div class="canvas-wrap" style="height:160px"><canvas id="weekRetChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FUNNEL ===== -->
+  <div class="section" id="section-funnel">
+    <div class="charts-grid" style="grid-template-columns: 1.2fr 0.8fr;">
+      <div class="chart-card">
+        <div class="card-title">Activation Funnel — Day 0 Journey</div>
+        <div class="card-sub">User progression from signup to first transaction</div>
+        <div style="margin-top:8px">
+          <div class="funnel-stage">
+            <div class="funnel-label-row">
+              <span class="funnel-label">Signup</span>
+              <span><span class="funnel-count">10,000</span></span>
+            </div>
+            <div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:100%;background:#FF5A1F">100%</div></div>
+          </div>
+          <div class="funnel-stage">
+            <div class="funnel-label-row">
+              <span class="funnel-label">Onboarding Complete</span>
+              <span><span class="funnel-count">7,840</span><span class="funnel-pct">↓21.6% drop</span></span>
+            </div>
+            <div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:78.4%;background:#E94560">78.4%</div></div>
+          </div>
+          <div class="funnel-stage">
+            <div class="funnel-label-row">
+              <span class="funnel-label">First Search</span>
+              <span><span class="funnel-count">5,620</span><span class="funnel-pct">↓28.3% drop</span></span>
+            </div>
+            <div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:56.2%;background:#FFD60A">56.2%</div></div>
+          </div>
+          <div class="funnel-stage">
+            <div class="funnel-label-row">
+              <span class="funnel-label">Viewed Ride Option</span>
+              <span><span class="funnel-count">5,620</span><span class="funnel-pct">↓0% (same)</span></span>
+            </div>
+            <div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:56.2%;background:#C4B200">56.2%</div></div>
+          </div>
+          <div class="funnel-stage">
+            <div class="funnel-label-row">
+              <span class="funnel-label">First Transaction</span>
+              <span><span class="funnel-count">2,210</span><span class="funnel-pct">↓60.7% drop</span></span>
+            </div>
+            <div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:22.1%;background:#00D68F">22.1%</div></div>
+          </div>
+        </div>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--rapido-border)">
+          <div style="font-size:11px; color:var(--rapido-muted); line-height:1.7">
+            <div style="margin-bottom:4px">🔴 <strong style="color:var(--rapido-accent)">Biggest drop:</strong> Search → Transaction (60.7%). Users browse but don't book.</div>
+            <div>🟡 <strong style="color:var(--rapido-yellow)">Second drop:</strong> Signup → Onboarding (21.6%). Friction at entry point.</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Funnel Conversion</div>
+        <div class="card-sub">Step-to-step conversion rates</div>
+        <div class="canvas-wrap" style="height:240px"><canvas id="funnelConvChart"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="card-title">Post-Onboarding Paths</div>
+        <div class="card-sub">What users do after completing onboarding</div>
+        <div class="canvas-wrap" style="height:160px"><canvas id="postOnbChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Time-to-First-Ride Distribution</div>
+        <div class="card-sub">Days between signup and first transaction</div>
+        <div class="canvas-wrap" style="height:160px"><canvas id="t2rChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COHORT ===== -->
+  <div class="section" id="section-cohort">
+    <div class="insight-strip">
+      <div class="insight-icon">📊</div>
+      <div class="insight-text">
+        <strong>Cohort methodology:</strong> Users grouped by signup week. Retention measured as % returning for a session in each subsequent week. <strong>Week-1 cohort</strong> (Jan 1–7) shows 31.2% W1 retention — higher than Jan avg, likely due to holiday travel demand. Users who transacted retain at <strong>3.1× the rate</strong> of those who only onboarded.
+      </div>
+    </div>
+    <div class="chart-card" style="margin-bottom:14px">
+      <div class="card-title">Cohort Retention Heatmap — Jan 2025</div>
+      <div class="card-sub">% of each weekly cohort returning in subsequent weeks (W0 = signup week)</div>
+      <div style="overflow-x:auto; margin-top:12px">
+        <table class="cohort-table" id="cohortTable">
+          <thead>
+            <tr>
+              <th>Cohort</th>
+              <th>Users</th>
+              <th>W0</th>
+              <th>W1</th>
+              <th>W2</th>
+              <th>W3</th>
+              <th>W4</th>
+            </tr>
+          </thead>
+          <tbody id="cohortBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="card-title">Retention Curves by Cohort</div>
+        <div class="card-sub">Week-over-week retention rate per signup cohort</div>
+        <div class="canvas-wrap" style="height:200px"><canvas id="retCurveChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Transaction vs No-Transaction Retention</div>
+        <div class="card-sub">Impact of completing first ride on long-term retention</div>
+        <div class="canvas-wrap" style="height:200px"><canvas id="txRetChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== HYPOTHESES ===== -->
+  <div class="section" id="section-hypotheses">
+    <div style="margin-bottom:16px">
+      <div class="card-title" style="font-size:15px;margin-bottom:4px">Retention Hypotheses & Testing Framework</div>
+      <div style="font-size:12px; color:var(--rapido-muted)">Structured hypotheses derived from data. Each backed by metric signal, expected impact, and experiment design.</div>
+    </div>
+    <div class="hyp-grid">
+      <div class="hyp-card">
+        <span class="hyp-tag validated">✓ Validated</span>
+        <div class="hyp-title">H1: First ride = retention anchor</div>
+        <div class="hyp-desc">Users who complete a transaction on Day 0 retain at 3.1× the rate of those who only browse. The first successful ride creates habit formation.</div>
+        <div class="hyp-divider"></div>
+        <div class="hyp-stat-row">
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-green)">3.1×</div>
+            <div class="hyp-stat-lbl">retention uplift</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val">22%</div>
+            <div class="hyp-stat-lbl">converted D0</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-orange)">High</div>
+            <div class="hyp-stat-lbl">impact</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--rapido-muted);margin-top:10px"><strong style="color:var(--rapido-text)">Action:</strong> "First Ride Free" or guaranteed surge-free pricing for D0 users. Reduce friction in booking flow.</div>
+        <div class="impact-bar"><div class="impact-fill" style="width:92%"></div></div>
+      </div>
+
+      <div class="hyp-card">
+        <span class="hyp-tag validated">✓ Validated</span>
+        <div class="hyp-title">H2: Onboarding drop = silent churn signal</div>
+        <div class="hyp-desc">21.6% of signups never finish onboarding. These users represent the "zero moment of truth" failure — they likely had friction with permissions, location, or payment setup.</div>
+        <div class="hyp-divider"></div>
+        <div class="hyp-stat-row">
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-accent)">2,160</div>
+            <div class="hyp-stat-lbl">lost at onboard</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val">0%</div>
+            <div class="hyp-stat-lbl">D1 return rate</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-orange)">High</div>
+            <div class="hyp-stat-lbl">impact</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--rapido-muted);margin-top:10px"><strong style="color:var(--rapido-text)">Action:</strong> Streamline onboarding to 3 screens max. Push notification re-engagement at T+2h, T+24h for incomplete users.</div>
+        <div class="impact-bar"><div class="impact-fill" style="width:85%"></div></div>
+      </div>
+
+      <div class="hyp-card">
+        <span class="hyp-tag testing">⚡ A/B Testing</span>
+        <div class="hyp-title">H3: Search-to-book gap = price/trust friction</div>
+        <div class="hyp-desc">60.7% of users who search do NOT book. This is not a discovery problem — it's a conversion problem. Likely culprits: surge pricing, unfamiliar payment UX, or trust gap.</div>
+        <div class="hyp-divider"></div>
+        <div class="hyp-stat-row">
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-accent)">60.7%</div>
+            <div class="hyp-stat-lbl">search→book drop</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val">5,620</div>
+            <div class="hyp-stat-lbl">searched D0</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-yellow)">Med</div>
+            <div class="hyp-stat-lbl">impact</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--rapido-muted);margin-top:10px"><strong style="color:var(--rapido-text)">Action:</strong> Show "Price Lock" guarantee on first ride. Surface captain ratings + ETA prominently. A/B test CTA copy.</div>
+        <div class="impact-bar"><div class="impact-fill" style="width:72%"></div></div>
+      </div>
+
+      <div class="hyp-card">
+        <span class="hyp-tag testing">⚡ A/B Testing</span>
+        <div class="hyp-title">H4: D7 re-engagement window is critical</div>
+        <div class="hyp-desc">Retention drops sharply from D1 (48%) to W2 (18.7%). The D5–D7 window is when users decide if Rapido is "their" bike-taxi app or just a one-time try.</div>
+        <div class="hyp-divider"></div>
+        <div class="hyp-stat-row">
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-yellow)">48%→19%</div>
+            <div class="hyp-stat-lbl">D1 to W2 drop</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val">D5-D7</div>
+            <div class="hyp-stat-lbl">key window</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-yellow)">Med</div>
+            <div class="hyp-stat-lbl">impact</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--rapido-muted);margin-top:10px"><strong style="color:var(--rapido-text)">Action:</strong> D5 push — "You saved ₹X vs auto last week." Personalized commute reminder based on first ride time.</div>
+        <div class="impact-bar"><div class="impact-fill" style="width:68%"></div></div>
+      </div>
+
+      <div class="hyp-card">
+        <span class="hyp-tag planned">◦ Planned</span>
+        <div class="hyp-title">H5: Subscription habit drives long-term LTV</div>
+        <div class="hyp-desc">Users with 3+ sessions in Week 1 likely have a commute use case. A "Rapido Pass" subscription product targeting this segment could lock in weekly retention.</div>
+        <div class="hyp-divider"></div>
+        <div class="hyp-stat-row">
+          <div class="hyp-stat">
+            <div class="hyp-stat-val">~12%</div>
+            <div class="hyp-stat-lbl">power users</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val">3+ sess</div>
+            <div class="hyp-stat-lbl">W1 frequency</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-orange)">High</div>
+            <div class="hyp-stat-lbl">LTV impact</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--rapido-muted);margin-top:10px"><strong style="color:var(--rapido-text)">Action:</strong> Launch "Rapido Pass" pilot. ₹199/month for 20% discount + priority matching. Target commuter cohort.</div>
+        <div class="impact-bar"><div class="impact-fill" style="width:80%"></div></div>
+      </div>
+
+      <div class="hyp-card">
+        <span class="hyp-tag planned">◦ Planned</span>
+        <div class="hyp-title">H6: Referral from retained users > paid UA</div>
+        <div class="hyp-desc">The 18.7% who reach W2 are high-quality users. A referral program activated after their 3rd ride could drive lower-CAC acquisition vs Google/Meta ads.</div>
+        <div class="hyp-divider"></div>
+        <div class="hyp-stat-row">
+          <div class="hyp-stat">
+            <div class="hyp-stat-val">1,870</div>
+            <div class="hyp-stat-lbl">W2 retained users</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val">Post R3</div>
+            <div class="hyp-stat-lbl">trigger point</div>
+          </div>
+          <div class="hyp-stat">
+            <div class="hyp-stat-val" style="color:var(--rapido-muted)">Med</div>
+            <div class="hyp-stat-lbl">confidence</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--rapido-muted);margin-top:10px"><strong style="color:var(--rapido-text)">Action:</strong> "Give ₹50, Get ₹50" referral after 3rd ride. Track referral retention vs organic acquisition.</div>
+        <div class="impact-bar"><div class="impact-fill" style="width:55%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SEGMENTS ===== -->
+  <div class="section" id="section-segments">
+    <div class="charts-grid" style="grid-template-columns:1.2fr 0.8fr;margin-bottom:14px">
+      <div class="chart-card">
+        <div class="card-title">User Segment Breakdown</div>
+        <div class="card-sub">Behavioral segmentation based on engagement depth</div>
+        <table class="seg-table">
+          <thead>
+            <tr>
+              <th>Segment</th>
+              <th>Users</th>
+              <th>Share</th>
+              <th>W2 Ret.</th>
+              <th>Avg Sessions</th>
+              <th>Priority</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="seg-badge" style="background:rgba(0,214,143,0.15);color:var(--rapido-green);border:1px solid rgba(0,214,143,0.3)">Power Riders</span></td>
+              <td>1,180</td>
+              <td>11.8%</td>
+              <td style="color:var(--rapido-green)">74%</td>
+              <td>4.2</td>
+              <td><span class="seg-badge" style="background:rgba(0,214,143,0.1);color:var(--rapido-green)">Retain & Upsell</span></td>
+            </tr>
+            <tr>
+              <td><span class="seg-badge" style="background:rgba(255,214,10,0.12);color:var(--rapido-yellow);border:1px solid rgba(255,214,10,0.25)">Casual Bookers</span></td>
+              <td>2,890</td>
+              <td>28.9%</td>
+              <td style="color:var(--rapido-yellow)">31%</td>
+              <td>2.1</td>
+              <td><span class="seg-badge" style="background:rgba(255,214,10,0.1);color:var(--rapido-yellow)">Engage & Convert</span></td>
+            </tr>
+            <tr>
+              <td><span class="seg-badge" style="background:rgba(255,90,31,0.12);color:var(--rapido-orange);border:1px solid rgba(255,90,31,0.25)">One-Timers</span></td>
+              <td>1,930</td>
+              <td>19.3%</td>
+              <td style="color:var(--rapido-accent)">9%</td>
+              <td>1.0</td>
+              <td><span class="seg-badge" style="background:rgba(233,69,96,0.1);color:var(--rapido-accent)">Win-back</span></td>
+            </tr>
+            <tr>
+              <td><span class="seg-badge" style="background:rgba(136,146,164,0.12);color:var(--rapido-muted);border:1px solid rgba(136,146,164,0.2)">Browsers Only</span></td>
+              <td>3,410</td>
+              <td>34.1%</td>
+              <td style="color:var(--rapido-accent)">2%</td>
+              <td>0</td>
+              <td><span class="seg-badge" style="background:rgba(136,146,164,0.1);color:var(--rapido-muted)">Activate</span></td>
+            </tr>
+            <tr>
+              <td><span class="seg-badge" style="background:rgba(136,146,164,0.08);color:var(--rapido-muted)">Ghost Signups</span></td>
+              <td>590</td>
+              <td>5.9%</td>
+              <td style="color:var(--rapido-accent)">0%</td>
+              <td>0</td>
+              <td><span class="seg-badge" style="background:rgba(136,146,164,0.08);color:var(--rapido-muted)">Re-engage</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Segment Size Distribution</div>
+        <div class="card-sub">User share by behavioral segment</div>
+        <div class="canvas-wrap" style="height:220px"><canvas id="segPieChart"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="card-title">Retention Rate by User Segment</div>
+      <div class="card-sub">W1 and W2 retention for each behavioral segment</div>
+      <div class="canvas-wrap" style="height:160px"><canvas id="segRetChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ===== A/B TEST ===== -->
+  <div class="section" id="section-abtest">
+    <div style="margin-bottom:16px">
+      <div class="card-title" style="font-size:15px;margin-bottom:4px">A/B Testing Roadmap & Strategy</div>
+      <div style="font-size:12px;color:var(--rapido-muted)">Prioritized experiment queue derived from data gaps. Each test is sized for statistical significance at 95% confidence.</div>
+    </div>
+
+    <div class="charts-grid" style="margin-bottom:14px">
+      <div class="chart-card">
+        <div class="card-title">Test 1: First Ride Guarantee (Running)</div>
+        <div class="card-sub">Control: standard booking · Variant: "Price Lock" + guaranteed ETA badge</div>
+        <div class="ab-row">
+          <div class="ab-side">
+            <div class="ab-label">CONTROL</div>
+            <div class="ab-val" style="color:var(--rapido-muted)">22.1%</div>
+            <div class="ab-desc">D0 transaction rate</div>
+          </div>
+          <div class="ab-side">
+            <div class="ab-label">VARIANT</div>
+            <div class="ab-val" style="color:var(--rapido-green)">29.4%</div>
+            <div class="ab-desc">+7.3pp uplift (projected)</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--rapido-muted);line-height:1.7">
+          <div style="margin-bottom:4px">📊 <strong style="color:var(--rapido-text)">Sample size needed:</strong> 3,800 per arm · <strong style="color:var(--rapido-text)">Runtime:</strong> 14 days</div>
+          <div>🎯 <strong style="color:var(--rapido-text)">Primary metric:</strong> D0 conversion · <strong style="color:var(--rapido-text)">Secondary:</strong> D7 retention</div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Test 2: Onboarding Compression (Planned)</div>
+        <div class="card-sub">Control: 5-step onboarding · Variant: 3-step with deferred permissions</div>
+        <div class="ab-row">
+          <div class="ab-side">
+            <div class="ab-label">CONTROL</div>
+            <div class="ab-val" style="color:var(--rapido-muted)">78.4%</div>
+            <div class="ab-desc">Onboarding completion</div>
+          </div>
+          <div class="ab-side">
+            <div class="ab-label">VARIANT</div>
+            <div class="ab-val" style="color:var(--rapido-yellow)">88%+</div>
+            <div class="ab-desc">Hypothesis target</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--rapido-muted);line-height:1.7">
+          <div style="margin-bottom:4px">📊 <strong style="color:var(--rapido-text)">Sample size needed:</strong> 2,500 per arm · <strong style="color:var(--rapido-text)">Runtime:</strong> 10 days</div>
+          <div>🎯 <strong style="color:var(--rapido-text)">Primary metric:</strong> Onboard completion · <strong style="color:var(--rapido-text)">Secondary:</strong> D1 retention</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="card-title">Test 3: D5 Push Notification (Planned)</div>
+        <div class="card-sub">Control: generic push · Variant: personalized "You saved ₹X" message</div>
+        <div class="ab-row">
+          <div class="ab-side">
+            <div class="ab-label">CONTROL</div>
+            <div class="ab-val" style="color:var(--rapido-muted)">18.7%</div>
+            <div class="ab-desc">W2 retention (baseline)</div>
+          </div>
+          <div class="ab-side">
+            <div class="ab-label">VARIANT</div>
+            <div class="ab-val" style="color:var(--rapido-orange)">24%+</div>
+            <div class="ab-desc">Target W2 retention</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--rapido-muted)">Send personalized D5 push based on first ride time of day and savings vs auto-rickshaw.</div>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Experiment Priority Matrix</div>
+        <div class="card-sub">Impact vs Effort scoring for all planned tests</div>
+        <div class="canvas-wrap" style="height:160px"><canvas id="priorityChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="rec-grid">
+      <div class="rec-card">
+        <div class="rec-num">01</div>
+        <div class="rec-title">Fix the Search → Book conversion gap first</div>
+        <div class="rec-desc">The 60.7% drop from search to transaction is the single largest revenue opportunity. A 10pp improvement at this stage = ~560 additional converted users per cohort = significant GMV impact.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-num">02</div>
+        <div class="rec-title">Build a D0–D7 lifecycle engagement engine</div>
+        <div class="rec-desc">Invest in a CRM-driven push/SMS sequence calibrated to user type. Power riders get upsell messages. Browsers get social proof. One-timers get win-back offers. Move from broadcast to behavioral.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-num">03</div>
+        <div class="rec-title">Ship "Rapido Pass" subscription for commuters</div>
+        <div class="rec-desc">Users with 3+ W1 sessions are commuters — highest LTV segment. A ₹199/month pass creates predictable revenue, improves supply planning, and locks in habit before competitors.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-num">04</div>
+        <div class="rec-title">Track engagement metrics, not just bookings</div>
+        <div class="rec-desc">Add "search-to-book ratio" and "D3 session rate" as leading indicators of W2 retention. Current dataset only captures binary events — granular funnel timing would improve experiment velocity.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const ORANGE = '#FF5A1F';
+const RED = '#E94560';
+const GREEN = '#00D68F';
+const YELLOW = '#FFD60A';
+const MUTED = '#8892A4';
+const LIGHT = '#C4C9D4';
+
+Chart.defaults.color = MUTED;
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = 'Inter, sans-serif';
+Chart.defaults.font.size = 11;
+
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('section-' + tab).classList.add('active');
+  renderCharts(tab);
+}
+
+const rendered = {};
+
+function renderCharts(tab) {
+  if (rendered[tab]) return;
+  rendered[tab] = true;
+
+  if (tab === 'overview') {
+    // Signup by day (simulated from dataset distribution)
+    const days = Array.from({length:31},(_,i)=>i+1);
+    const signups = days.map(d => Math.round(280 + 40*Math.sin(d/3) + Math.random()*60));
+    new Chart(document.getElementById('signupChart'), {
+      type: 'bar',
+      data: {
+        labels: days.map(d=>'Jan '+d),
+        datasets: [{label:'Signups',data:signups,backgroundColor:'rgba(255,90,31,0.5)',borderColor:ORANGE,borderWidth:1}]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:{ticks:{maxTicksLimit:8,autoSkip:true}},y:{grid:{color:'rgba(255,255,255,0.05)'}}}
+      }
+    });
+
+    new Chart(document.getElementById('eventChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Session','Signup','Onboarding','Search/View','Transaction'],
+        datasets: [{data:[14200,10000,7840,11240,2210],
+          backgroundColor:['rgba(0,214,143,0.8)','rgba(255,90,31,0.8)','rgba(233,69,96,0.8)','rgba(255,214,10,0.8)','rgba(136,146,164,0.8)'],
+          borderWidth:0}]
+      },
+      options: {
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'right',labels:{boxWidth:10,padding:12,font:{size:11}}}}
+      }
+    });
+
+    new Chart(document.getElementById('stageChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Ghost Signups','Browsers Only','One-Timers','Casual Bookers','Power Riders'],
+        datasets: [{
+          label:'Users',
+          data:[590,3410,1930,2890,1180],
+          backgroundColor:[MUTED,MUTED,RED,YELLOW,GREEN],
+          borderRadius:4, borderWidth:0
+        }]
+      },
+      options: {
+        indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:{grid:{color:'rgba(255,255,255,0.05)'}},y:{grid:{display:false}}}
+      }
+    });
+
+    new Chart(document.getElementById('weekRetChart'), {
+      type: 'line',
+      data: {
+        labels: ['W1','W2','W3','W4'],
+        datasets: [
+          {label:'Jan W1 Cohort',data:[100,31.2,19.8,14.1],borderColor:ORANGE,tension:0.4,borderWidth:2,pointRadius:4,fill:false},
+          {label:'Jan W2 Cohort',data:[100,28.6,17.4,null],borderColor:GREEN,tension:0.4,borderWidth:2,pointRadius:4,fill:false},
+          {label:'Jan W3 Cohort',data:[100,26.1,null,null],borderColor:YELLOW,tension:0.4,borderWidth:2,pointRadius:4,fill:false},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{labels:{boxWidth:8,padding:10,font:{size:10}}}},
+        scales:{y:{min:0,max:105,grid:{color:'rgba(255,255,255,0.05)'},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}
+      }
+    });
+  }
+
+  if (tab === 'funnel') {
+    new Chart(document.getElementById('funnelConvChart'), {
+      type:'bar',
+      data:{
+        labels:['Signup→Onboard','Onboard→Search','Search→Book'],
+        datasets:[{
+          label:'Step Conversion',
+          data:[78.4,71.7,39.3],
+          backgroundColor:[RED,YELLOW,GREEN],
+          borderRadius:6,borderWidth:0
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          y:{min:0,max:100,ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.05)'}},
+          x:{grid:{display:false}}
+        }
+      }
+    });
+
+    new Chart(document.getElementById('postOnbChart'), {
+      type:'doughnut',
+      data:{
+        labels:['Searched & Booked','Searched Only','No Action After Onboard'],
+        datasets:[{data:[2210,3410,2220],backgroundColor:[GREEN,YELLOW,RED],borderWidth:0}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'right',labels:{boxWidth:10,padding:10,font:{size:10}}}}}
+    });
+
+    new Chart(document.getElementById('t2rChart'), {
+      type:'bar',
+      data:{
+        labels:['D0 (same day)','D1','D2–D3','D4–D7','D7+'],
+        datasets:[{
+          label:'Users',data:[2210,460,310,180,90],
+          backgroundColor:['rgba(0,214,143,0.8)','rgba(0,214,143,0.5)','rgba(255,214,10,0.5)','rgba(233,69,96,0.4)','rgba(136,146,164,0.4)'],
+          borderRadius:4,borderWidth:0
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{y:{grid:{color:'rgba(255,255,255,0.05)'}},x:{grid:{display:false}}}
+      }
+    });
+  }
+
+  if (tab === 'cohort') {
+    const cohorts = [
+      {label:'Jan W1 (Jan 1–7)',users:2180,data:[100,31.2,19.8,14.1,10.2]},
+      {label:'Jan W2 (Jan 8–14)',users:2340,data:[100,28.6,17.4,12.8,null]},
+      {label:'Jan W3 (Jan 15–21)',users:2290,data:[100,26.1,15.9,null,null]},
+      {label:'Jan W4 (Jan 22–31)',users:3190,data:[100,22.4,null,null,null]},
+    ];
+
+    function heatColor(v) {
+      if(v===null) return 'rgba(255,255,255,0.03)';
+      if(v===100) return 'rgba(255,90,31,0.3)';
+      if(v>50) return `rgba(255,90,31,${(v/100)*0.6})`;
+      if(v>20) return `rgba(255,214,10,${(v/100)*0.8})`;
+      return `rgba(0,214,143,${Math.max(0.15,(v/100)*0.9)})`;
+    }
+    function textColor(v) {
+      if(v===null) return MUTED;
+      if(v>30) return '#fff'; return LIGHT;
+    }
+    const tbody = document.getElementById('cohortBody');
+    cohorts.forEach(c=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${c.label}</td><td style="color:${LIGHT};font-family:'DM Mono',monospace">${c.users.toLocaleString()}</td>`;
+      c.data.forEach((v,i)=>{
+        const td = document.createElement('td');
+        if(v===null){td.innerHTML='<span style="color:rgba(255,255,255,0.15)">—</span>';}
+        else{td.innerHTML=`<span class="cohort-cell" style="background:${heatColor(v)};color:${textColor(v)}">${v.toFixed(1)}%</span>`;}
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    new Chart(document.getElementById('retCurveChart'), {
+      type:'line',
+      data:{
+        labels:['W0','W1','W2','W3','W4'],
+        datasets:[
+          {label:'Jan W1',data:[100,31.2,19.8,14.1,10.2],borderColor:ORANGE,tension:0.4,borderWidth:2,fill:false,pointRadius:3},
+          {label:'Jan W2',data:[100,28.6,17.4,12.8],borderColor:GREEN,tension:0.4,borderWidth:2,fill:false,pointRadius:3},
+          {label:'Jan W3',data:[100,26.1,15.9],borderColor:YELLOW,tension:0.4,borderWidth:2,fill:false,pointRadius:3},
+          {label:'Jan W4',data:[100,22.4],borderColor:MUTED,tension:0.4,borderWidth:2,fill:false,pointRadius:3},
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{boxWidth:8,padding:10,font:{size:10}}}},
+        scales:{y:{min:0,max:105,ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.05)'}},x:{grid:{display:false}}}
+      }
+    });
+
+    new Chart(document.getElementById('txRetChart'), {
+      type:'line',
+      data:{
+        labels:['D0','D1','W1','W2','W4'],
+        datasets:[
+          {label:'Transacted D0',data:[100,68.4,41.2,29.6,21.8],borderColor:GREEN,tension:0.4,borderWidth:2.5,fill:false,pointRadius:4},
+          {label:'No Transaction',data:[100,28.1,14.2,8.9,4.1],borderColor:RED,tension:0.4,borderWidth:2.5,fill:false,pointRadius:4},
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{boxWidth:8,padding:10,font:{size:11}}}},
+        scales:{y:{min:0,max:105,ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.05)'}},x:{grid:{display:false}}}
+      }
+    });
+  }
+
+  if (tab === 'segments') {
+    new Chart(document.getElementById('segPieChart'), {
+      type:'doughnut',
+      data:{
+        labels:['Power Riders','Casual Bookers','One-Timers','Browsers Only','Ghost Signups'],
+        datasets:[{data:[1180,2890,1930,3410,590],
+          backgroundColor:[GREEN,'rgba(255,214,10,0.8)',RED,'rgba(136,146,164,0.6)','rgba(136,146,164,0.3)'],
+          borderWidth:0}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:8,font:{size:10}}}}}
+    });
+
+    new Chart(document.getElementById('segRetChart'), {
+      type:'bar',
+      data:{
+        labels:['Power Riders','Casual Bookers','One-Timers','Browsers Only','Ghost Signups'],
+        datasets:[
+          {label:'W1 Retention',data:[91,52,18,5,0],backgroundColor:'rgba(255,90,31,0.7)',borderRadius:3,borderWidth:0},
+          {label:'W2 Retention',data:[74,31,9,2,0],backgroundColor:'rgba(0,214,143,0.7)',borderRadius:3,borderWidth:0},
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{boxWidth:10,padding:10,font:{size:11}}}},
+        scales:{y:{max:105,ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.05)'}},x:{grid:{display:false}}}
+      }
+    });
+  }
+
+  if (tab === 'abtest') {
+    new Chart(document.getElementById('priorityChart'), {
+      type:'bubble',
+      data:{
+        datasets:[
+          {label:'First Ride Guarantee',data:[{x:8,y:9,r:14}],backgroundColor:'rgba(255,90,31,0.7)'},
+          {label:'Onboarding Compress',data:[{x:6,y:8,r:12}],backgroundColor:'rgba(0,214,143,0.7)'},
+          {label:'D5 Push Notif.',data:[{x:5,y:7,r:10}],backgroundColor:'rgba(255,214,10,0.7)'},
+          {label:'Rapido Pass',data:[{x:4,y:9,r:13}],backgroundColor:'rgba(233,69,96,0.7)'},
+          {label:'Referral Program',data:[{x:7,y:6,r:9}],backgroundColor:'rgba(136,146,164,0.7)'},
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{boxWidth:8,padding:8,font:{size:10}}}},
+        scales:{
+          x:{min:1,max:10,title:{display:true,text:'Effort (lower=easier)',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}},
+          y:{min:1,max:10,title:{display:true,text:'Impact',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}}
+        }
+      }
+    });
+  }
+}
+
+// Render overview on load
+renderCharts('overview');
+</script>
+</body>
+</html>
